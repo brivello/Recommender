@@ -11,6 +11,26 @@ const getRatings = () => {
 
 const teammateRatingsDict = {};
 
+
+/* parsing for Recommender */
+
+const getUnvisitedRestaurantIdForTeammateId = (teammateId) => {
+	let newRestaurants = new Set(restaurants.map( x => x.id));
+	getRatingsForTeammateId(teammateId).map( rRating => {
+		newRestaurants.delete(rRating.restaurantId);
+	});
+	return newRestaurants;
+};
+
+const getRestaurantById = (restaurantId) => {
+	for (var i = 0; i < restaurants.length; i++) {
+		if (restaurants[i].id == restaurantId) {
+			return restaurants[i];
+		}
+	}
+}
+
+
 const getRatingsForTeammateId = (teammateId) => {
 	var teammateRatings;
 	teammateRatings = teammateRatingsDict[teammateId];
@@ -27,16 +47,14 @@ const getRatingsForTeammateId = (teammateId) => {
 	return teammateRatings
 };
 
-const getRatingsForRestaurantId = (restaurantIds) => {
-	var resterauntRatings = [];
+const getRatingsForRestaurantId = (restaurantId) => {
+	var restaurantRatings = [];
 	for (var i = 0; i < ratings.length; i++){ 
-		for (var j = 0; j < ratings.length; i++) {
-			if (ratings[i].restaurantId == restaurantIds[j]) {
-				teammateRatings.push(ratings[i]);
-			}
+		if (ratings[i].restaurantId == restaurantId) {
+			restaurantRatings.push(ratings[i]);
 		}
 	}
-	return resterauntRatings
+	return restaurantRatings
 };
 
 const getTeammates = () => {
@@ -83,32 +101,67 @@ const getRestaurants = () => {
 
 /* Parsing for SimilarityIndex */
 const likedResterauntsByTeammate = {};
-const getRestarauntIdsLikedByTeammateId = () => {
-	return restaurants
+const getRestaurantIdsLikedByTeammateId = (teammateId) => {               /*
+	- input:  (string) teammatetId
+	- output: set of (string) restaurantIds                     */
+	let goodRestaurants = likedResterauntsByTeammate[teammateId];
+	if (goodRestaurants == null) {
+		goodRestaurants = getResterauntIdsWithOpinionAndTeamateId(teammateId, "LIKE");
+		likedResterauntsByTeammate[teammateId] = goodRestaurants;
+	}
+	return goodRestaurants
 };
 const dislikedResterauntsByTeammate = {};
-const getRestaurantIdsDislikedByTeammateId = () => {
-	return restaurants
+const getRestaurantIdsDislikedByTeammateId = (teammateId) => {               /*
+	- input:  (string) teammatetId
+	- output: set of (string) restaurantIds                        */
+	let badRestaurants = dislikedResterauntsByTeammate[teammateId];
+	if (badRestaurants == null) {
+		badRestaurants = getResterauntIdsWithOpinionAndTeamateId(teammateId, "DISLIKE");
+		dislikedResterauntsByTeammate[teammateId] = badRestaurants;
+	}
+	return badRestaurants
 };
+
+function getResterauntIdsWithOpinionAndTeamateId (teammateId, rating) {
+	restaurantSubset = new Set();
+	for (var i = 0; i < ratings.length; i++) {
+		if (ratings[i].teammateId == teammateId && ratings[i].rating == rating) {
+			restaurantSubset.add(ratings[i].restaurantId);
+		}
+	}
+	return restaurantSubset;
+}
 
 
 
 /* Parsing for Tests */
+
+const confirmRatingExists = (rating, teammateId, restaurantId) => {
+	let rRatings = getRatingsForRestaurantId(restaurantId);
+	for (let rRating of rRatings) {
+		if (rRating.teammateId == teammateId && rRating.rating == rating) {
+			return true;
+		}
+	}
+	return false;
+}
+
 
 const testTeammatesOpinionOfRestaurant = (teammateId, restaurantId, opinion) => {
 	for (var i = 0; i < ratings.length; i++) {
 		if (ratings[i].restaurantId == restaurantId && ratings[i].teammateId == teammateId) {
 			if (ratings[i].rating == opinion) {
 				return true;
-			} else {
-				return false;
 			}
 		}
 	}
-	return null;
+	return false;
 }
 
 module.exports = {
+	getUnvisitedRestaurantIdForTeammateId,
+	getRestaurantById,
 	getRatings,
 	getRatingsForTeammateId,
 	getRatingsForRestaurantId,
@@ -116,24 +169,8 @@ module.exports = {
 	getTeammateIdsThatLikedRestaurantId,
 	getTeammateIdsThatDislikedRestaurantId,
 	getRestaurants,
-	getRestarauntIdsLikedByTeammateId,
+	getRestaurantIdsLikedByTeammateId,
 	getRestaurantIdsDislikedByTeammateId,
-	testTeammatesOpinionOfRestaurant
+	testTeammatesOpinionOfRestaurant,
+	confirmRatingExists
 };
-
-
-/*class Rating {
-	constructor (teamateId, restaurantId, rating) {
-		this.teamateId = teamateId;
-		this.restaurantId = restaurantId;
-		this.rating = rating;
-	}
-}
-var parsedRatings = [];
-	for (var i = 0; i < ratings.length; i++){ 
-		var rating = ratings[i];
-		console.log(rating.rating);
-		parsedRatings.push(new Rating(rating.teammateID, rating.restaurantId, rating.rating));
-	}
-	return parsedRatings
-*/
