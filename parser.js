@@ -8,29 +8,7 @@ const getRatings = () => {
 	return ratings
 };
 
-
 const teammateRatingsDict = {};
-
-
-/* parsing for Recommender */
-
-const getUnvisitedRestaurantIdForTeammateId = (teammateId) => {
-	let newRestaurants = new Set(restaurants.map( x => x.id));
-	getRatingsForTeammateId(teammateId).map( rRating => {
-		newRestaurants.delete(rRating.restaurantId);
-	});
-	return newRestaurants;
-};
-
-const getRestaurantById = (restaurantId) => {
-	for (var i = 0; i < restaurants.length; i++) {
-		if (restaurants[i].id == restaurantId) {
-			return restaurants[i];
-		}
-	}
-}
-
-
 const getRatingsForTeammateId = (teammateId) => {
 	var teammateRatings;
 	teammateRatings = teammateRatingsDict[teammateId];
@@ -57,6 +35,9 @@ const getRatingsForRestaurantId = (restaurantId) => {
 	return restaurantRatings
 };
 
+
+
+
 const getTeammates = () => {
 	return teammates
 };
@@ -82,8 +63,16 @@ const getTeammateIdsThatDislikedRestaurantId = (restaurantId) => { /*
 		sadTeammates = getTeammateIdsWithOpinionOfRestaurantId(restaurantId, "DISLIKE");
 		teammatesThatDislikedRestaurant[restaurantId] = sadTeammates;
 	}
-	return sadTeammates
+	return sadTeammates;
 };
+
+const getTeammateFromSearchText = (searchText) => {
+	let results = search(teammates, searchText);
+	if (results.length > 0) {
+		return results[0];
+	}
+	return null;
+}
 
 function getTeammateIdsWithOpinionOfRestaurantId (restaurantId, opinion) {
 	teammateSubset = new Set();
@@ -95,11 +84,29 @@ function getTeammateIdsWithOpinionOfRestaurantId (restaurantId, opinion) {
 	return teammateSubset;
 }
 
+function search(source, name) {
+    var results = [];
+    var index;
+    var entry;
+
+    name = name.toUpperCase();
+    for (index = 0; index < source.length; ++index) {
+        entry = source[index];
+        if (entry && entry.name && entry.name.toUpperCase().indexOf(name) !== -1) {
+            results.push(entry);
+        }
+    }
+    return results;
+}
+
+
+
+
+
 const getRestaurants = () => {
 	return restaurants
 };
 
-/* Parsing for SimilarityIndex */
 const likedResterauntsByTeammate = {};
 const getRestaurantIdsLikedByTeammateId = (teammateId) => {               /*
 	- input:  (string) teammatetId
@@ -131,6 +138,22 @@ function getResterauntIdsWithOpinionAndTeamateId (teammateId, rating) {
 		}
 	}
 	return restaurantSubset;
+}
+
+const getUnvisitedRestaurantIdForTeammateId = (teammateId) => {
+	let newRestaurants = new Set(restaurants.map( x => x.id));
+	getRatingsForTeammateId(teammateId).map( rRating => {
+		newRestaurants.delete(rRating.restaurantId);
+	});
+	return newRestaurants;
+};
+
+const getRestaurantById = (restaurantId) => {
+	for (var i = 0; i < restaurants.length; i++) {
+		if (restaurants[i].id == restaurantId) {
+			return restaurants[i];
+		}
+	}
 }
 
 
@@ -168,6 +191,7 @@ module.exports = {
 	getTeammates,
 	getTeammateIdsThatLikedRestaurantId,
 	getTeammateIdsThatDislikedRestaurantId,
+	getTeammateFromSearchText,
 	getRestaurants,
 	getRestaurantIdsLikedByTeammateId,
 	getRestaurantIdsDislikedByTeammateId,

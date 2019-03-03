@@ -1,3 +1,5 @@
+const readline = require('readline');
+
 const {	getUnvisitedRestaurantIdForTeammateId,
 	getRestaurantById,
 	getRatings,
@@ -6,6 +8,7 @@ const {	getUnvisitedRestaurantIdForTeammateId,
 	getTeammates,
 	getTeammateIdsThatLikedRestaurantId,
 	getTeammateIdsThatDislikedRestaurantId,
+	getTeammateFromSearchText,
 	getRestaurants,
 	getRestaurantIdsLikedByTeammateId,
 	getRestaurantIdsDislikedByTeammateId,
@@ -14,7 +17,9 @@ const {	getUnvisitedRestaurantIdForTeammateId,
 
 const {similarityIndex} = require("./similarityIndex.js");
 
-const recommendationForRestaurantId = (userId, restaurantId) => {
+
+
+function recommendationForRestaurantId (userId, restaurantId) {
 
 	let likedSimilarityIndexSum    = 0;
 	let dislikedSimilarityIndexSum = 0;
@@ -33,27 +38,48 @@ const recommendationForRestaurantId = (userId, restaurantId) => {
 	return (likedSimilarityIndexSum - dislikedSimilarityIndexSum) / totalRatings;
 }
 
-let userId = "e17b91cb-5a2c-4055-befb-1d1ea9f7daca"
-let unvistedRestaurantIds = getUnvisitedRestaurantIdForTeammateId(userId);
-let recommendedRestaurants = [];
+const recommend = (userId) => {
+	let unvistedRestaurantIds = getUnvisitedRestaurantIdForTeammateId(userId);
+	let recommendedRestaurants = [];
 
-for (let rId of unvistedRestaurantIds) {
-	restaurant = getRestaurantById(rId)
-	restaurant['recommendation'] = recommendationForRestaurantId(userId, rId);
-	recommendedRestaurants.push(restaurant);
+	for (let rId of unvistedRestaurantIds) {
+		restaurant = getRestaurantById(rId)
+		restaurant['recommendation'] = recommendationForRestaurantId(userId, rId);
+		recommendedRestaurants.push(restaurant);
+	}
+
+	recommendedResaurants = recommendedRestaurants.sort( (lhs, rhs) => {
+		return lhs.recommendation < rhs.recommendation ?  1
+			 : lhs.recommendation > rhs.recommendation ? -1
+			 : 0;
+	});
+
+	return recommendedRestaurants.slice(0,3);
 }
 
-recommendedResaurants = recommendedRestaurants.sort( (lhs, rhs) => {
-	return lhs.recommendation < rhs.recommendation ?  1
-		 : lhs.recommendation > rhs.recommendation ? -1
-		 : 0;
+
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
 });
 
-console.log(recommendedRestaurants.slice(0,3));
+rl.question("Who do you want to receive recommendations for? ", function(answer) {
+	if (answer == "exit") {
+	  	rl.close();
+	}
+	let results = getTeammateFromSearchText(answer);
+	if (results != null) {
+	  	console.log("Restaurant recommendations for " + results.name + ":\n" + JSON.stringify(recommend(results.id), null, '   '));
+	} else {
+	  	console.log("Sorry, I did not recognize that name\n");
+	}
+	rl.close();
+});
 
 
 
-module.exports = { recommendationForRestaurantId }
+
+module.exports = { recommend }
 
 const http = require('http');
 const hostname = '127.0.0.1';

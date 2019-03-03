@@ -1,5 +1,5 @@
-var assert = require('assert');
-var expect = require('expect');
+const assert = require('assert');
+const expect = require('expect');
 
 const {	getUnvisitedRestaurantIdForTeammateId,
 	getRestaurantById,
@@ -9,6 +9,7 @@ const {	getUnvisitedRestaurantIdForTeammateId,
 	getTeammates,
 	getTeammateIdsThatLikedRestaurantId,
 	getTeammateIdsThatDislikedRestaurantId,
+    getTeammateFromSearchText,
 	getRestaurants,
 	getRestaurantIdsLikedByTeammateId,
 	getRestaurantIdsDislikedByTeammateId,
@@ -17,14 +18,20 @@ const {	getUnvisitedRestaurantIdForTeammateId,
 
 const {similarityIndex} = require('./../similarityIndex.js');
 
+const {recommend} = require('./../recommender.js');
+
 
 describe('parser.js', function() {
 
   describe('getRatings', function() {
     it('Should return valid ratings', function() {
     	var rrs = getRatings();
-    	var rating = rrs[0].rating
-    	assert.equal(rating, "DISLIKE");
+    	expect(rrs.length).toBeGreaterThan(0);
+    	for (var i = 0; i < rrs.length; i++){
+    		expect(rrs[i].teammateId.length).toBeGreaterThan(0);
+    		expect(rrs[i].restaurantId.length).toBeGreaterThan(0);
+    		expect(rrs[i].rating.length).toBeGreaterThan(0);
+    	}
     });
   });
 
@@ -35,6 +42,30 @@ describe('parser.js', function() {
     	for (var i = 0; i < ratings.length; i++) {
     		let currentId = ratings[0].teammateId
     		assert.equal(currentId, teammateId);
+    	}
+    });
+  });
+
+ describe('getRatingsForRestaurantId', function() {
+    it('Should return > 0 ratings. Ratings should have teammateId, resaurantId and rating.', function() {
+    	let restaurantId = "aL53puqxtcR1KZrrj4U7Jw";
+    	let ratings = getRatingsForRestaurantId(restaurantId);
+    	assert(ratings);
+    	for (let rating of ratings) {
+    		assert(rating.rating);
+    		assert(rating.teammateId);
+    		assert(rating.restaurantId);
+    	}
+    });
+  });
+
+ describe('getTeammates', function() {
+    it('Should return valid teammates', function() {
+    	var teammates = getTeammates();
+    	expect(teammates.length).toBeGreaterThan(0);
+    	for (var i = 0; i < teammates.length; i++){
+    		expect(teammates[i].name.length).toBeGreaterThan(0);
+    		expect(teammates[i].id.length).toBeGreaterThan(0);
     	}
     });
   });
@@ -61,16 +92,26 @@ describe('parser.js', function() {
     });
   });
 
+    describe('getTeammateFromSearchText', function() {
+    it('Should return a teammate from partial name search', function() {
+        let teammates = getTeammates();
+        for (var i = 0; i < teammates.length; i++){
+            let results = getTeammateFromSearchText(teammates[i].name.slice(0, teammates[i].name.length / 2));
+            assert.equal(results.name, teammates[i].name);
+        }
+    });
+  });
 
-     describe('getRatingsForRestaurantId', function() {
-    it('Should return > 0 ratings. Ratings should have teammateId, resaurantId and rating.', function() {
-    	let restaurantId = "aL53puqxtcR1KZrrj4U7Jw";
-    	let ratings = getRatingsForRestaurantId(restaurantId);
-    	assert(ratings);
-    	for (let rating of ratings) {
-    		assert(rating.rating);
-    		assert(rating.teammateId);
-    		assert(rating.restaurantId);
+    describe('getRestaurants', function() {
+    it('Should return valid restaurants', function() {
+    	var rrs = getRestaurants();
+    	expect(rrs.length).toBeGreaterThan(0);
+    	for (var i = 0; i < rrs.length; i++){
+    		expect(rrs[i].name.length).toBeGreaterThan(0);
+    		expect(rrs[i].id.length).toBeGreaterThan(0);
+    		expect(rrs[i].image_url.length).toBeGreaterThan(0);
+    		expect(rrs[i].categories.length).toBeGreaterThan(0);
+    		expect(rrs[i].rating).toBeGreaterThan(-10);
     	}
     });
   });
@@ -97,7 +138,7 @@ describe('parser.js', function() {
     });
   });
 
-     describe('getUnvisitedRestaurantIdForTeammateId', function() {
+    describe('getUnvisitedRestaurantIdForTeammateId', function() {
     it('Should return all resetaurants that have not been visited by the teammate', function() {
     	let teammateId = "e17b91cb-5a2c-4055-befb-1d1ea9f7daca";
     	let restaurantIds = getUnvisitedRestaurantIdForTeammateId(teammateId);
@@ -121,11 +162,11 @@ describe('similarityIndex.js', function() {
     	expect(teammates.length).toBeGreaterThan(0);
     	for (var i = 0; i < teammates.length; i++) {
     		for (var j = 0; j < teammates.length; j++) {
-    			let si = similarityIndex(teammates[i].id, teammates[j].id);
-    			expect(si).not.toBeLessThan(-1.0)
-    			expect(si).not.toBeGreaterThan(1.0);
+    			let simIndex = similarityIndex(teammates[i].id, teammates[j].id);
+    			expect(simIndex).not.toBeLessThan(-1.0)
+    			expect(simIndex).not.toBeGreaterThan(1.0);
     			if (i == j) {
-    				assert.equal(si, 1.0);
+    				assert.equal(simIndex, 1.0);
     			}
     		}
     	}
@@ -134,7 +175,21 @@ describe('similarityIndex.js', function() {
 });
 
 
+describe('recommender.js', function() {
 
+    describe('recommend()', function() {
+    it('Should return the three highest recommended restaurants for teammateId', function() {
+        const teammates = getTeammates();
+        expect(teammates.length).toBeGreaterThan(0);
+        for (var i = 0; i < teammates.length; i++) {
+            recommendedRestaurants = recommend(teammates[i].id);
+            assert.equal(recommendedRestaurants.length, 3);
+            expect(recommendedRestaurants[0].recommendation).toBeGreaterThan(recommendedRestaurants[1].recommendation);
+            expect(recommendedRestaurants[1].recommendation).toBeGreaterThan(recommendedRestaurants[2].recommendation);
+        }
+    });
+  });
+});
 
 
 
