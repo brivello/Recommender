@@ -1,0 +1,32 @@
+{
+  "name": "recommender",
+  "version": "1.0.0",
+  "description": "",
+  "main": "recommender.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brivello/Recommender.git"
+  },
+  "keywords": [
+    "Recommender",
+    "Suitable",
+    "JSON"
+  ],
+  "author": "Ben Rivello",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brivello/Recommender/issues"
+  },
+  "homepage": "https://github.com/brivello/Recommender#readme",
+  "dependencies": {
+    "expect": "^24.1.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^6.0.2"
+  }
+}
