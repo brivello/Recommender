@@ -272,7 +272,15 @@ describe('similarityIndex.js', function() {
 
 describe('recommender.js', function() {
     describe('recommend()', function() {
-    it('Should return top recommended resteraunts sorted by rating(highest first)', function() {
+    it('Should return 3 resteraunts', function() {
+        const teammates = getTeammates();
+        expect(teammates.length).toBeGreaterThan(0);
+        for (var i = 0; i < teammates.length; i++) {
+            recommendedRestaurants = recommend(teammates[i].id);
+            assert.equal(recommendedRestaurants.length, 3);
+        }
+    });
+    it('Recommended resteraunts should be sorted by rating(highest first)', function() {
         const teammates = getTeammates();
         expect(teammates.length).toBeGreaterThan(0);
         for (var i = 0; i < teammates.length; i++) {
@@ -280,6 +288,17 @@ describe('recommender.js', function() {
             assert.equal(recommendedRestaurants.length, 3);
             expect(recommendedRestaurants[0].rating).not.toBeLessThan(recommendedRestaurants[1].rating);
             expect(recommendedRestaurants[1].rating).not.toBeLessThan(recommendedRestaurants[2].rating);
+        }
+    });
+     it('Should not return restaurants that the user has already rated', function() {
+        const teammates = getTeammates();
+        expect(teammates.length).toBeGreaterThan(0);
+        for (var i = 0; i < teammates.length; i++) {
+            recommendedRestaurants = recommend(teammates[i].id);
+            for (var j = 0; j < 3; j++) {
+                assert.equal(confirmRatingExists("DISLIKE", teammates[i].id, recommendedRestaurants[j].id), false);
+                assert.equal(confirmRatingExists("LIKE", teammates[i].id, recommendedRestaurants[j].id),false);
+            }
         }
     });
   });
