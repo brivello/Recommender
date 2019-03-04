@@ -33,6 +33,10 @@ To recieve a restaurant recommendation: nagivate to the project directory, enter
 npm start
 
 ```
+`exit` wil terminate the program
+
+
+
 To run the tests for this project: navigate to the project directory and enter the following command.
 ```
 npm test
