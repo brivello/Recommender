@@ -37,9 +37,13 @@ const recommend = (userId) => {
 		return lhs.recommendation < rhs.recommendation ?  1
 			 : lhs.recommendation > rhs.recommendation ? -1
 			 : 0;
-	});
+	}); // sort the highest recommended retaurants first 
 
-	return recommendedRestaurants.slice(0,3);
+	return recommendedRestaurants.slice(0,3).sort( (lhs, rhs) => {
+		return lhs.rating < rhs.rating ?  1
+			 : lhs.rating > rhs.rating ? -1
+			 : 0;
+	}); // sort the final three hightest restaurants by rating
 }
 
 function recommendationForRestaurantId (userId, restaurantId) {

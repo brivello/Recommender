@@ -228,14 +228,14 @@ describe('similarityIndex.js', function() {
 
 describe('recommender.js', function() {
     describe('recommend()', function() {
-    it('Should return the three highest recommended restaurants for teammateId', function() {
+    it('Should return resteraunts in sorted by order(highest first)', function() {
         const teammates = getTeammates();
         expect(teammates.length).toBeGreaterThan(0);
         for (var i = 0; i < teammates.length; i++) {
             recommendedRestaurants = recommend(teammates[i].id);
             assert.equal(recommendedRestaurants.length, 3);
-            expect(recommendedRestaurants[0].recommendation).toBeGreaterThan(recommendedRestaurants[1].recommendation);
-            expect(recommendedRestaurants[1].recommendation).toBeGreaterThan(recommendedRestaurants[2].recommendation);
+            expect(recommendedRestaurants[0].rating).not.toBeLessThan(recommendedRestaurants[1].rating);
+            expect(recommendedRestaurants[1].rating).not.toBeLessThan(recommendedRestaurants[2].rating);
         }
     });
   });
