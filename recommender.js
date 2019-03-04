@@ -43,17 +43,17 @@ const recommend = (userId) => {
 		return lhs.rating < rhs.rating ?  1
 			 : lhs.rating > rhs.rating ? -1
 			 : 0;
-	}); // sort the final three hightest restaurants by rating
+	}); // sort the final three hightest recommended restaurants by rating
 }
 
 function recommendationForRestaurantId (userId, restaurantId) {
 
 	let likedSimilarityIndexSum    = 0;
 	let dislikedSimilarityIndexSum = 0;
-	let totalRatings = getRatingsForRestaurantId(restaurantId).length;
+	let totalRatings               = getRatingsForRestaurantId(restaurantId).length;
 
 	let teammatesWhoLiked     = getTeammateIdsThatLikedRestaurantId(restaurantId);
-	let teammatesWhoDisliked = getTeammateIdsThatDislikedRestaurantId(restaurantId);
+	let teammatesWhoDisliked  = getTeammateIdsThatDislikedRestaurantId(restaurantId);
 
 	for (let teammateId of teammatesWhoLiked) {
 		likedSimilarityIndexSum += similarityIndex(userId, teammateId);

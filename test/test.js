@@ -133,23 +133,29 @@ describe('teammates.js', function() {
     });
   });
     describe('getTeammateIdsThatLikedRestaurantId', function() {
-    it('Should return only teammateIds that gave LIKE ratings for restaurantID', function() {
-    	var restaurantId = "aL53puqxtcR1KZrrj4U7Jw";
-    	var teammateIds = getTeammateIdsThatLikedRestaurantId(restaurantId);
-    	expect(teammateIds.size).toBeGreaterThan(0);
-    	for (let _tid of teammateIds) {
-            assert(confirmRatingExists("LIKE", _tid, restaurantId));
-    	}
+    it('Should return only teammateIds that gave LIKE ratings for restaurantIDs', function() {
+        var restaurantIds = getRestaurants().map( x => x.id );
+        for (var i = 0; i < restaurantIds.length ; i++){
+        	var teammateIds = getTeammateIdsThatLikedRestaurantId(restaurantIds[i]);
+        	expect(teammateIds.size).toBeGreaterThan(0);
+        	for (let _tid of teammateIds) {
+                assert(confirmRatingExists("LIKE", _tid, restaurantIds[i]));
+        	}
+        }
     });
   });
     describe('getTeammateIdsThatDisikedRestaurantId', function() {
-    it('Should return only teammateIds that gave DISLIKE ratings for restaurantID', function() {
-    	var restaurantId = "aL53puqxtcR1KZrrj4U7Jw";
-    	var teammateIds = getTeammateIdsThatDislikedRestaurantId(restaurantId);
-    	expect(teammateIds.size).toBeGreaterThan(0);
-    	for (let _tid of teammateIds) {
-            assert(confirmRatingExists("DISLIKE", _tid, restaurantId));
-    	}
+    it('Should return only teammateIds that gave DISLIKE ratings for restaurantIDs', function() {
+    	var restaurantIds = getRestaurants().map( x => x.id );
+        let totalAssertions = 0;
+        for (var i = 0; i < restaurantIds.length ; i++){
+            var teammateIds = getTeammateIdsThatDislikedRestaurantId(restaurantIds[i]);
+            for (let _tid of teammateIds) {
+                totalAssertions ++;
+                assert(confirmRatingExists("DISLIKE", _tid, restaurantIds[i]));
+            }
+        }
+        expect(totalAssertions).toBeGreaterThan(0);
     });
   });
     describe('getTeammateFromSearchText', function() {
@@ -158,6 +164,14 @@ describe('teammates.js', function() {
         for (var i = 0; i < teammates.length; i++){
             let results = getTeammateFromSearchText(teammates[i].name.slice(0, teammates[i].name.length / 2));
             assert.equal(results.name, teammates[i].name);
+        }
+    });
+    it('Returned teammates should have name and id', function() {
+        let teammates = getTeammates();
+        for (var i = 0; i < teammates.length; i++){
+            let results = getTeammateFromSearchText(teammates[i].name.slice(0, teammates[i].name.length / 2));
+            expect(results.name.length).toBeGreaterThan(0);
+            expect(results.id.length).toBeGreaterThan(0);
         }
     });
   });
@@ -183,23 +197,41 @@ describe('restaurants.js', function() {
     });
   });
      describe('getRestaurantIdsLikedByTeammateId', function() {
-    it('Should return > 0 restaurantIds and teammate should have LIKE rating for all restaurantIds returned', function() {
-    	var teammateId = "e17b91cb-5a2c-4055-befb-1d1ea9f7daca";
-    	var restaurantIds = getRestaurantIdsLikedByTeammateId(teammateId);
-    	expect(restaurantIds.size).toBeGreaterThan(0);
-    	for (let _rid of restaurantIds) {
-    		assert.equal(confirmRatingExists("LIKE", teammateId, _rid), true);
-    	}
+    it('Should return restaurantIds', function() {
+    	var teammateIds = getTeammates().map( x => x.id );
+        let rIds = 0;
+        for (var i = 0; i < teammateIds.length ; i++){
+        	rIds += getRestaurantIdsLikedByTeammateId(teammateIds[i]).size;
+        }
+        expect(rIds).toBeGreaterThan(0);
+    });
+     it('Should have LIKE rating for all restaurantIds returned', function() {
+        var teammateIds = getTeammates().map( x => x.id );
+        for (var i = 0; i < teammateIds.length ; i++){
+            var restaurantIds = getRestaurantIdsLikedByTeammateId(teammateIds[i]);
+            for (let _rid of restaurantIds) {
+                assert.equal(confirmRatingExists("LIKE", teammateIds[i], _rid), true);
+            }
+        }
     });
   });
     describe('getRestaurantIdsDislikedByTeammateId', function() {
-    it('Should return > 0 restaurantIds and teammate should have DISLIKE rating for all restaurantIds returned', function() {
-    	var teammateId = "e17b91cb-5a2c-4055-befb-1d1ea9f7daca";
-    	var restaurantIds = getRestaurantIdsDislikedByTeammateId(teammateId);
-    	expect(restaurantIds.size).toBeGreaterThan(0);
-    	for (let _rid of restaurantIds) {
-    		assert.equal(confirmRatingExists("DISLIKE", teammateId, _rid), true);
-    	}
+    it('Should return restaurantIds', function() {
+        var teammateIds = getTeammates().map( x => x.id );
+        let rIds = 0;
+        for (var i = 0; i < teammateIds.length ; i++){
+            rIds += getRestaurantIdsDislikedByTeammateId(teammateIds[i]).size;
+        }
+        expect(rIds).toBeGreaterThan(0);
+    });
+     it('Should have DISLIKE rating for all restaurantIds returned', function() {
+        var teammateIds = getTeammates().map( x => x.id );
+        for (var i = 0; i < teammateIds.length ; i++){
+            var restaurantIds = getRestaurantIdsDislikedByTeammateId(teammateIds[i]);
+            for (let _rid of restaurantIds) {
+                assert.equal(confirmRatingExists("DISLIKE", teammateIds[i], _rid), true);
+            }
+        }
     });
   });
 });
@@ -208,7 +240,7 @@ describe('restaurants.js', function() {
 
 describe('similarityIndex.js', function() {
 	describe('similarityIndex()', function() {
-    it('Should retun range of: -1.0 <= value <= 1.0. Should return 1.0 when the same teammateId is used for both arguments.', function() {
+    it('Should retun range of: -1.0 <= value <= 1.0.', function() {
     	const teammates = getTeammates();
     	expect(teammates.length).toBeGreaterThan(0);
     	for (var i = 0; i < teammates.length; i++) {
@@ -222,13 +254,25 @@ describe('similarityIndex.js', function() {
     		}
     	}
     });
+    it('Should return 1.0 when the same teammateId is used for both arguments.', function() {
+        const teammates = getTeammates();
+        expect(teammates.length).toBeGreaterThan(0);
+        for (var i = 0; i < teammates.length; i++) {
+            for (var j = 0; j < teammates.length; j++) {
+                if (i == j) {
+                    let simIndex = similarityIndex(teammates[i].id, teammates[j].id);
+                    assert.equal(simIndex, 1.0);
+                }
+            }
+        }
+    });
   });
 });
 
 
 describe('recommender.js', function() {
     describe('recommend()', function() {
-    it('Should return resteraunts in sorted by order(highest first)', function() {
+    it('Should return top recommended resteraunts sorted by rating(highest first)', function() {
         const teammates = getTeammates();
         expect(teammates.length).toBeGreaterThan(0);
         for (var i = 0; i < teammates.length; i++) {
