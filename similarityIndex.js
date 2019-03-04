@@ -1,18 +1,28 @@
-const {	getRatings,
+
+const {
+	getRatings,
 	getRatingsForTeammateId,
-	getRatingsForRestaurantId,
+	getRatingsForRestaurantId,	
+	getUnvisitedRestaurantIdForTeammateId,
+	confirmRatingExists
+} = require('./data/ratings.js');
+
+const {
+	getRestaurantById,
+	getRestaurants,
+	getRestaurantIdsLikedByTeammateId,
+	getRestaurantIdsDislikedByTeammateId
+} = require('./data/restaurants.js');
+
+const {
 	getTeammates,
 	getTeammateIdsThatLikedRestaurantId,
 	getTeammateIdsThatDislikedRestaurantId,
-	getRestaurants,
-	getRestaurantIdsLikedByTeammateId,
-	getRestaurantIdsDislikedByTeammateId,
-	testTeammatesOpinionOfRestaurant,
-	confirmRatingExists } = require('./parser.js');
+	getTeammateFromSearchText,
+} = require('./data/teammates.js');
 
 
 similarityIndexDict = {};
-
 const similarityIndex = (tId_1, tId_2) => {
 	let hashedIds = hashTeammateIds(tId_1, tId_2);
 	let similarityIndex = similarityIndexDict[hashedIds]
@@ -52,4 +62,7 @@ function hashTeammateIds(tId_1, tId_2) {
 	return hashedIds;
 }
 
+
 module.exports = { similarityIndex };
+
+
