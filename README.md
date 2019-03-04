@@ -60,7 +60,7 @@ npm test
 - unit tests for `similarityIndex.js`, `recommender.js`, `ratings.js`, `restaurants.js` and `teammates.js`
 
 ### recommender.js
-- uses functions from the data folder and `similarityIndex.js` to calculate a recommendation score for each resteraunt
+- uses functions from the `data` folder and `similarityIndex.js` to calculate a recommendation score for each restaurant
 
 ### similarityIndex.js
 - uses functions from the data folder to calculate the similarity index for two teammates
